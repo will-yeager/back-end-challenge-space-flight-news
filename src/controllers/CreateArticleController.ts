@@ -1,13 +1,13 @@
-import { Request, Response } from 'express'
-import { ArticlesRepository } from '../repositories/ArticlesRepository'
+import { Request, Response } from 'express';
+import { ArticlesRepository } from '../repositories/ArticlesRepository';
+import { validationResult } from 'express-validator';
 
 class CreateArticleController {
-  private readonly repository = new ArticlesRepository()
-
   async handle(req: Request, res: Response) {
-    const { featured, title, url, imageUrl, newsSite, summary, publishedAt, launches, events } =
-      req.body
-    const article = this.repository.create({
+    const repository = new ArticlesRepository();
+    const errors = validationResult(req);
+
+    const {
       featured,
       title,
       url,
@@ -17,9 +17,26 @@ class CreateArticleController {
       publishedAt,
       launches,
       events,
-    })
-    res.status(201).send(article)
+    } = req.body;
+
+    if (!errors.isEmpty()) {
+      return res.status(400).send(errors.array({ onlyFirstError: true }));
+    }
+
+    const article = await repository.create({
+      featured,
+      title,
+      url,
+      imageUrl,
+      newsSite,
+      summary,
+      publishedAt,
+      launches,
+      events,
+    });
+
+    return res.status(201).send(article);
   }
 }
 
-export { CreateArticleController }
+export { CreateArticleController };

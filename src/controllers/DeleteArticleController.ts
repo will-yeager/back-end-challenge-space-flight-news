@@ -1,14 +1,20 @@
-import { Request, Response } from 'express'
-import { ArticlesRepository } from '../repositories/ArticlesRepository'
+import { Request, Response } from 'express';
+import { ObjectId } from 'mongodb';
+import { ArticlesRepository } from '../repositories/ArticlesRepository';
 
 class DeleteArticleController {
-  private readonly repository = new ArticlesRepository()
+  async handle(req: Request, res: Response) {
+    const repository = new ArticlesRepository();
 
-  async handle(_req: Request, _res: Response) {
-    const { id } = _req.params
-    await this.repository.delete(id)
-    _res.status(204)
+    const { id } = req.params;
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json('O id enviado é inválido');
+    }
+
+    await repository.delete(id);
+
+    return res.status(204).send({ success: true });
   }
 }
 
-export { DeleteArticleController }
+export { DeleteArticleController };

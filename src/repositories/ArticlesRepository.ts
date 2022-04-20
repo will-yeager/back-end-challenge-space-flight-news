@@ -1,80 +1,50 @@
-import { ObjectId } from 'mongodb'
-import { Article } from '../models/Article'
-
-interface IArticle {
-  featured: {
-    type: boolean
-    required: true
-  }
-  title: {
-    type: string
-    required: true
-  }
-  url: {
-    type: string
-    required: true
-  }
-  imageUrl: {
-    type: string
-    required: true
-  }
-  newsSite: {
-    type: string
-    required: true
-  }
-  summary: {
-    type: string
-    required: true
-  }
-  publishedAt: {
-    type: string
-    required: true
-  }
-  launches: [
-    {
-      id: {
-        type: string
-        required: true
-      }
-      provider: {
-        type: string
-        required: true
-      }
-    },
-  ]
-  events: [
-    {
-      id: {
-        type: string
-        required: true
-      }
-      provider: {
-        type: string
-        required: true
-      }
-    },
-  ]
-}
+import { ObjectId } from 'mongodb';
+import { ArticleModel, Article } from '../models/Article';
 
 class ArticlesRepository {
-  async create(inputArticle: IArticle) {
-    const article = await Article.create(inputArticle)
-    return article
+  async create(inputArticle: Article): Promise<Article> {
+    const result = await ArticleModel.create(inputArticle);
+
+    return result;
   }
 
-  async list() {
-    const articles = await Article.find()
-    return articles
+  async list(limit: number, start: number): Promise<Article[]> {
+    const result = await ArticleModel.find().limit(limit).skip(start);
+
+    return result;
   }
 
-  async findById(id: string) {
-    const article = await Article.findOne({ id: new ObjectId(id) })
-    return article
+  async findById(id: string): Promise<Article | null> {
+    const result = await ArticleModel.findOne({ _id: new ObjectId(id) });
+
+    if (!result) return null;
+
+    return result;
   }
 
-  async delete(id: string) {
-    await Article.deleteOne({ id: new ObjectId(id) })
+  async update(id: string, inputArticle: Article): Promise<Article | null> {
+    const result = await ArticleModel.findOneAndUpdate(
+      {
+        _id: new ObjectId(id),
+      },
+      inputArticle,
+      {
+        useFindAndModify: false,
+        returnDocument: 'after',
+        lean: true,
+      },
+    );
+
+    if (!result) {
+      return null;
+    }
+
+    return result;
+  }
+
+  async delete(id: string): Promise<void> {
+    await ArticleModel.deleteOne({ _id: new ObjectId(id) });
   }
 }
 
-export { ArticlesRepository }
+export { ArticlesRepository };
