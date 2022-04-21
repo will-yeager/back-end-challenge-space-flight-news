@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "dev": "nodemon",
-    "start": "nodemon",
+    "start": "node build/server.js",
+    "tsc": "tsc",
     "seed": "nodemon src/config/database/seed",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
