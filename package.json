@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon",
     "start": "node build/index.js",
-    "tsc": "tsc",
+    "postinstall": "tsc",
     "seed": "nodemon src/config/database/seed",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
