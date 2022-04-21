@@ -1,7 +1,6 @@
-import { dbConnection } from './';
+import { dbConnection } from '.';
 import { ArticleModel } from '../../models/Article';
 import axios from 'axios';
-import { Request, Response } from 'express';
 
 interface IArticles {
   data: [
@@ -28,32 +27,42 @@ interface IArticles {
     },
   ];
 }
-class SeedController {
-  async handle(_req: Request, _res: Response) {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    ArticleModel.collection.drop().catch(() => {
-      console.log('A collection articles não existe no banco');
+
+async function seedDatabase() {
+  const connection = await dbConnection();
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  ArticleModel.collection.drop().catch(() => {
+    console.log('A collection articles não existe no banco');
+  });
+
+  console.log('Coletando os dados da API....');
+
+  const allArticles: IArticles = await axios.get(
+    'https://api.spaceflightnewsapi.net/v3/articles?_limit=-1',
+  );
+
+  console.log('Inserindo os dados da API no banco de dados....');
+
+  for (const article of allArticles.data) {
+    await ArticleModel.create({
+      featured: article.featured,
+      title: article.title,
+      url: article.url,
+      imageUrl: article.imageUrl,
+      newsSite: article.newsSite,
+      summary: article.summary,
+      publishedAt: article.publishedAt,
+      launches: article.launches,
+      events: article.events,
     });
-
-    const allArticles: IArticles = await axios.get(
-      'https://api.spaceflightnewsapi.net/v3/articles?_limit=-1',
-    );
-
-    for (const article of allArticles.data) {
-      await ArticleModel.create({
-        featured: article.featured,
-        title: article.title,
-        url: article.url,
-        imageUrl: article.imageUrl,
-        newsSite: article.newsSite,
-        summary: article.summary,
-        publishedAt: article.publishedAt,
-        launches: article.launches,
-        events: article.events,
-      });
-    }
-    return _res.json('Banco alimentado com sucesso');
   }
+
+  console.log('Banco de dados alimentados com sucesso');
+
+  await connection?.disconnect().then(() => {
+    console.log('MongoDB desconectado com sucesso');
+  });
 }
 
-export { SeedController };
+seedDatabase();
